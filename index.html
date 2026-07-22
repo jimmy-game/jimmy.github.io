@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ゴースト判定ツール | Phasmophobia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0e0c;
+    --panel: #131a17;
+    --panel-border: #253028;
+    --text: #d9e8e0;
+    --muted: #7d9188;
+    --emf: #39ff6a;
+    --orb: #5eead4;
+    --box: #ffb454;
+    --frz: #7dd3fc;
+    --uv: #c9a3ff;
+    --wrt: #f472b6;
+    --dot: #a3e635;
+    --danger: #ff5c5c;
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;touch-action:manipulation;}
+  body{
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(57,255,106,0.06), transparent 60%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px),
+      var(--bg);
+    color:var(--text);
+    font-family:'Noto Sans JP', sans-serif;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+
+  button{
+    font-family:inherit;
+    -webkit-appearance:none;
+    appearance:none;
+    touch-action:manipulation;
+  }
+
+  .wrap{max-width:640px;margin:0 auto;padding:18px 14px 0;}
+
+  header{padding:8px 4px 18px;border-bottom:1px solid var(--panel-border);margin-bottom:18px;position:relative;}
+  .kicker{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    color:var(--emf);
+    text-transform:uppercase;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:6px;
+  }
+  .kicker::before{
+    content:'';
+    width:7px;height:7px;border-radius:50%;
+    background:var(--emf);
+    box-shadow:0 0 8px var(--emf);
+    animation:blink 1.6s infinite;
+  }
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.25;}}
+  h1{
+    font-family:'Special Elite', cursive;
+    font-size:26px;
+    margin:0 0 4px;
+    letter-spacing:0.02em;
+    color:#eef7f1;
+  }
+  .subtitle{font-size:12.5px;color:var(--muted);line-height:1.6;}
+
+  .gauge{display:flex;gap:5px;margin-top:14px;}
+  .gauge-seg{
+    flex:1;height:7px;border-radius:2px;
+    background:#1c2621;border:1px solid var(--panel-border);
+    transition:all .25s ease;
+  }
+  .gauge-seg.lit{background:var(--emf);box-shadow:0 0 10px rgba(57,255,106,0.7);border-color:var(--emf);}
+  .gauge-seg.excl{background:var(--danger);box-shadow:0 0 10px rgba(255,92,92,0.5);border-color:var(--danger);}
+  .gauge-label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;display:flex;justify-content:space-between;}
+
+  section{margin-bottom:22px;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+  .section-title{font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;}
+  .reset-btn{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--danger);
+    background:none;border:1px solid rgba(255,92,92,0.35);border-radius:5px;padding:7px 11px;cursor:pointer;
+  }
+  .reset-btn:active{background:rgba(255,92,92,0.12);}
+
+  .legend{
+    display:flex;gap:14px;margin-bottom:10px;font-size:10.5px;color:var(--muted);
+    font-family:'JetBrains Mono',monospace;flex-wrap:wrap;
+  }
+  .legend span{display:flex;align-items:center;gap:5px;}
+  .legend .sw{width:9px;height:9px;border-radius:3px;display:inline-block;}
+  .legend .sw.found{background:var(--emf);}
+  .legend .sw.excl{background:var(--danger);}
+
+  .evidence-list{display:flex;flex-direction:column;gap:8px;}
+  .ev-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    padding:12px;background:var(--panel);border:1.5px solid var(--panel-border);
+    border-radius:10px;transition:all .15s ease;
+    position:relative;
+    z-index:1;
+  }
+  .ev-row.is-found{border-color:var(--c);box-shadow:0 0 0 1px var(--c), 0 0 14px -4px var(--c);}
+  .ev-row.is-excluded{border-color:var(--danger);background:linear-gradient(180deg, rgba(255,92,92,0.05), transparent), var(--panel);}
+
+  .ev-info{display:flex;align-items:center;gap:10px;min-width:0;flex:1 1 auto;pointer-events:none;}
+  .ev-info .dot{width:11px;height:11px;border-radius:50%;background:var(--c);flex-shrink:0;opacity:0.55;}
+  .ev-row.is-found .ev-info .dot{opacity:1;box-shadow:0 0 8px var(--c);}
+  .ev-row.is-excluded .ev-info .dot{opacity:0.25;}
+  .ev-label{font-size:13.5px;font-weight:500;color:var(--text);line-height:1.3;}
+  .ev-row.is-excluded .ev-label{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--danger);}
+  .ev-en{display:block;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted);margin-top:1px;}
+
+  .ev-actions{display:flex;gap:8px;flex-shrink:0;position:relative;z-index:2;}
+  .ev-pill{
+    font-family:'JetBrains Mono',monospace;font-size:12px;padding:10px 14px;border-radius:20px;
+    border:1px solid var(--panel-border);background:#0e1512;color:var(--muted);cursor:pointer;
+    user-select:none;transition:all .15s ease;white-space:nowrap;
+    min-width:56px;min-height:38px;
+    -webkit-user-select:none;
+  }
+  .ev-pill:active{transform:scale(0.94);}
+  .ev-pill.found-btn.active{border-color:var(--c);color:#0a0e0c;background:var(--c);font-weight:700;}
+  .ev-pill.excl-btn.active{border-color:var(--danger);color:#fff;background:var(--danger);font-weight:700;}
+  .ev-pill.dimmed{opacity:0.35;}
+
+  .result-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--emf);}
+
+  .empty-state{
+    border:1px dashed rgba(255,92,92,0.4);border-radius:10px;padding:18px 16px;
+    text-align:center;color:var(--danger);font-size:13px;line-height:1.7;
+  }
+  .empty-state .big{font-family:'Special Elite',cursive;font-size:16px;display:block;margin-bottom:4px;}
+
+  .ghost-list{display:flex;flex-direction:column;gap:9px;}
+  .ghost-card{background:var(--panel);border:1px solid var(--panel-border);border-radius:10px;padding:12px 13px;transition:opacity .2s ease;}
+  .ghost-top{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .ghost-name-btn{
+    background:none;border:none;padding:0;margin:0;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:8px;flex:1;min-width:0;
+  }
+  .ghost-name{font-size:15px;font-weight:700;color:#f2fbf5;}
+  .ghost-name .en{font-family:'JetBrains Mono',monospace;font-weight:400;font-size:11px;color:var(--muted);margin-left:7px;}
+  .chev{color:var(--muted);font-size:12px;transition:transform .2s ease;flex-shrink:0;}
+  .ghost-card.open .chev{transform:rotate(90deg);}
+
+  .exclude-ghost-btn{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;
+    border:1px solid rgba(255,92,92,0.4);color:var(--danger);
+    background:rgba(255,92,92,0.06);border-radius:20px;padding:7px 11px;
+    cursor:pointer;flex-shrink:0;white-space:nowrap;
+  }
+  .exclude-ghost-btn:active{background:rgba(255,92,92,0.18);}
+
+  .ev-chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .chip{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 7px;border-radius:20px;border:1px solid;opacity:0.5;}
+  .chip.hit{opacity:1;font-weight:700;}
+
+  .ghost-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .ghost-card.open .ghost-detail{max-height:200px;}
+  .ghost-detail-inner{padding-top:10px;margin-top:10px;border-top:1px solid var(--panel-border);font-size:12.5px;color:var(--muted);line-height:1.7;}
+
+  .excluded-panel{margin-top:12px;}
+  .excluded-toggle{
+    width:100%;text-align:left;background:none;border:1px dashed var(--panel-border);
+    color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;
+    border-radius:8px;padding:9px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+  }
+  .excluded-list{display:none;flex-direction:column;gap:6px;margin-top:8px;}
+  .excluded-list.open{display:flex;}
+  .excluded-item{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    padding:9px 12px;background:var(--panel);border:1px solid var(--panel-border);border-radius:8px;
+  }
+  .excluded-item .nm{font-size:13px;color:var(--muted);text-decoration:line-through;}
+  .restore-btn{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--emf);
+    background:rgba(57,255,106,0.06);border:1px solid rgba(57,255,106,0.4);
+    border-radius:20px;padding:6px 10px;cursor:pointer;white-space:nowrap;
+  }
+
+  .info-box{background:var(--panel);border:1px solid var(--panel-border);border-radius:10px;padding:13px 14px;font-size:12px;color:var(--muted);line-height:1.8;}
+  .info-box b{color:var(--text);}
+
+  footer{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#3f4d46;padding:20px 0 0;}
+
+  @media (max-width:380px){
+    .ev-row{flex-direction:column;align-items:stretch;}
+    .ev-actions{width:100%;}
+    .ev-pill{flex:1;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">Evidence Scanner</div>
+    <h1>ゴースト判定ツール</h1>
+    <div class="subtitle">証拠ごとに「あり」「なし」をタップして選択すると、該当するゴーストが自動で絞り込まれます。</div>
+    <div class="gauge" id="gauge"></div>
+    <div class="gauge-label"><span id="gaugeText">証拠 0 選択中</span><span id="gaugeExclText">除外 0 件</span></div>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <div class="section-title">証拠を選択</div>
+      <button type="button" class="reset-btn" id="resetBtn">リセット</button>
+    </div>
+    <div class="legend">
+      <span><span class="sw found"></span>あり（確認した）</span>
+      <span><span class="sw excl"></span>なし（確認して除外）</span>
+    </div>
+    <div class="evidence-list" id="evidenceList"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="section-title">候補ゴースト</div>
+      <div class="result-count" id="resultCount"></div>
+    </div>
+    <div id="resultsArea"></div>
+    <div class="excluded-panel" id="excludedPanel" style="display:none;">
+      <button type="button" class="excluded-toggle" id="excludedToggle">
+        <span id="excludedToggleLabel">手動で除外したゴースト (0)</span><span>▶</span>
+      </button>
+      <div class="excluded-list" id="excludedList"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="info-box">
+      <b>使い方のヒント：</b>証拠が「ある」ことを確認できたら緑の「あり」を、他の証拠を試して確実に出ない（＝除外できる）とわかったら赤の「なし」をタップしてください。候補ゴーストの「除外」ボタンは、行動特性など証拠以外の理由でそのゴーストを候補から外したいときに使えます。ナイトメア/インサニティ難易度で証拠が少ない場合は、「なし」の除外だけでも候補を絞り込めます。
+    </div>
+  </section>
+
+  <footer>PHASMOPHOBIA GHOST IDENTIFICATION — Created by Jimmy</footer>
+</div>
+
+<script>
+const EVIDENCE = [
+  {id:'emf',   label:'EMFレベル5',         en:'EMF Level 5',        color:'var(--emf)'},
+  {id:'orb',   label:'ゴーストオーブ',      en:'Ghost Orb',          color:'var(--orb)'},
+  {id:'box',   label:'スピリットボックス',   en:'Spirit Box',        color:'var(--box)'},
+  {id:'frz',   label:'冷気（氷点下）',      en:'Freezing Temps',     color:'var(--frz)'},
+  {id:'uv',    label:'UV指紋',             en:'Ultraviolet',        color:'var(--uv)'},
+  {id:'wrt',   label:'ゴーストライティング', en:'Ghost Writing',     color:'var(--wrt)'},
+  {id:'dot',   label:'D.O.T.S投影',        en:'D.O.T.S Projector',  color:'var(--dot)'},
+];
+
+const GHOSTS = [
+  {name:'スピリット', en:'Spirit', ev:['emf','box','wrt'], trait:'特別な強みを持たない標準的なゴースト。お香の効果が通常より長く続く。'},
+  {name:'レイス', en:'Wraith', ev:['emf','box','dot'], trait:'塩を踏まず、足音での追跡ができない。ハント中にプレイヤーへ稀にテレポートする。'},
+  {name:'ファントム', en:'Phantom', ev:['box','uv','dot'], trait:'姿を見て心音が聞こえると正気度が減少。写真を撮ると姿が消える。'},
+  {name:'ポルターガイスト', en:'Poltergeist', ev:['box','uv','wrt'], trait:'複数の物を同時に、高速で投げつけることができる。周囲に投げる物がないと無力。'},
+  {name:'バンシー', en:'Banshee', ev:['orb','uv','dot'], trait:'特定の1人だけを執拗に狙う。パラボラマイクや録音機で特徴的な悲鳴が聞こえる。'},
+  {name:'ジン', en:'Jinn', ev:['emf','frz','uv'], trait:'ブレーカーがONの時、遠くのプレイヤーを視認すると高速で追跡する。ブレーカーOFF時は能力を使えない。'},
+  {name:'メアー', en:'Mare', ev:['orb','box','wrt'], trait:'暗闇では正気度が高くてもハントする。逆に明るい場所ではハント閾値が下がる。電気を消したがる。'},
+  {name:'レヴナント', en:'Revenant', ev:['orb','frz','wrt'], trait:'プレイヤーを発見していない時は超低速だが、発見すると一気に非常に速くなる。'},
+  {name:'シェード', en:'Shade', ev:['emf','frz','wrt'], trait:'非常に大人しく干渉が少ない。近くに複数人いるとハントを開始できない。'},
+  {name:'デーモン', en:'Demon', ev:['frz','uv','wrt'], trait:'お香の怯み効果が短い。正気度に関係なく極めて稀にハントを開始することがある。'},
+  {name:'幽霊', en:'Yurei', ev:['orb','frz','dot'], trait:'近くのプレイヤーの正気度を素早く奪う。お香で炙られると90秒間閉じ込められる。'},
+  {name:'鬼', en:'Oni', ev:['emf','frz','dot'], trait:'プレイヤーが近くにいると活動が活発になりやすい。ハント中は他のゴーストより見えやすい。'},
+  {name:'妖怪', en:'Yokai', ev:['orb','box','dot'], trait:'ハント中は近くでの会話に反応して一時的にハント閾値が上がる。逆に聞こえる範囲は非常に狭い。'},
+  {name:'ハントゥ', en:'Hantu', ev:['orb','frz','uv'], trait:'気温が低いほどハント中の移動が速くなる。ブレーカーは自分からは決してONにしない。'},
+  {name:'御霊', en:'Goryo', ev:['emf','uv','dot'], trait:'部屋に誰もいない時のみD.O.T.S状態になれる。お気に入りの部屋からほとんど離れない。'},
+  {name:'マイリング', en:'Myling', ev:['emf','uv','wrt'], trait:'ハント中の声はごく近距離でしか聞こえない。超常現象音を出す頻度が他より高い。'},
+  {name:'怨霊', en:'Onryo', ev:['orb','box','frz'], trait:'炎（ろうそくなど）を3つ消すと正気度に関係なくハントする。近くの灯った炎はクルシフィクスと同様にハントを防ぐ。'},
+  {name:'ツインズ', en:'The Twins', ev:['emf','box','frz'], trait:'2体が存在し、どちらもハントを開始できる（同時ではない）。片方は速く、もう片方は遅い。'},
+  {name:'雷獣', en:'Raiju', ev:['emf','orb','dot'], trait:'稼働中の電化製品の近くで速度が上昇。ハント中の機器干渉範囲が15mと広い。'},
+  {name:'化け狐', en:'Obake', ev:['emf','orb','uv'], trait:'指紋を残さないことがある一方、まれに特殊な指紋を残す。ハント中に一時的に別の姿へ変化することがある。'},
+  {name:'ミミック', en:'The Mimic', ev:['box','frz','uv'], trait:'他のゴーストの能力や特徴を模倣する。偽のゴーストオーブを追加証拠として見せることがある。'},
+  {name:'モーロイ', en:'Moroi', ev:['box','frz','wrt'], trait:'正気度が低いほど移動が速くなる。プレイヤーを呪って正気度の減少を早める。お香の効果は通常より長く効く。'},
+  {name:'デオヘン', en:'Deogen', ev:['box','wrt','dot'], trait:'ハント中は常にプレイヤーの位置を把握し遠距離では非常に速いが、近づくと極端に遅くなる。'},
+  {name:'セーイ', en:'Thaye', ev:['orb','wrt','dot'], trait:'契約序盤は速く活発だが、プレイヤーが近くにいる時間が長いほど遅く大人しくなっていく。'},
+  {name:'ガルル', en:'Gallu', ev:['emf','box','uv'], trait:'クルシフィクスやお香などの対抗装備を使われると攻撃的になる。ハント後は逆におとなしくなる。'},
+  {name:'オバンボ', en:'Obambo', ev:['uv','wrt','dot'], trait:'「攻撃的」状態では早く・速くハントするが、「穏やか」状態では遅く・遅くなる。攻撃的な時のハントは短時間で終わる。'},
+  {name:'アスワング', en:'Aswang', ev:['frz','wrt','dot'], trait:'視認すると他のどのゴーストより急加速する。ただし正規の隠れ場所にいるプレイヤーは殺せない。'},
+  {name:'コルモス', en:'Kormos', ev:['orb','box','uv'], trait:'ハント中、遠くの足音（特に走る音）を察知できるが、視覚でプレイヤーを検知できない。'},
+  {name:'ダヤン', en:'Dayan', ev:['emf','orb','box'], trait:'必ず女性。プレイヤーが近くで動くと速く・早くハントするが、立ち止まっていると遅く・遅くハントする。'},
+];
+
+// evState[id] = 'found' | 'excluded'  (absent key = neutral)
+const evState = {};
+const openCards = new Set();
+const manuallyExcluded = new Set(); // stores ghost.en
+let excludedListOpen = false;
+
+function satisfies(ghost, stateObj){
+  for(const id in stateObj){
+    if(stateObj[id] === 'found' && !ghost.ev.includes(id)) return false;
+    if(stateObj[id] === 'excluded' && ghost.ev.includes(id)) return false;
+  }
+  return true;
+}
+
+function matches(ghost){
+  return satisfies(ghost, evState);
+}
+
+function wouldEliminateAll(id, tentativeState){
+  const test = {...evState, [id]: tentativeState};
+  return !GHOSTS.some(g => satisfies(g, test) && !manuallyExcluded.has(g.en));
+}
+
+function setState(id, newState){
+  if(evState[id] === newState){
+    delete evState[id];
+  } else {
+    evState[id] = newState;
+  }
+  render();
+}
+
+function excludeGhost(en){
+  manuallyExcluded.add(en);
+  render();
+}
+
+function restoreGhost(en){
+  manuallyExcluded.delete(en);
+  render();
+}
+
+function render(){
+  const foundCount = Object.values(evState).filter(v => v==='found').length;
+  const exclCount = Object.values(evState).filter(v => v==='excluded').length;
+
+  const gauge = document.getElementById('gauge');
+  gauge.innerHTML = '';
+  EVIDENCE.forEach(ev => {
+    const seg = document.createElement('div');
+    let cls = 'gauge-seg';
+    if(evState[ev.id] === 'found') cls += ' lit';
+    else if(evState[ev.id] === 'excluded') cls += ' excl';
+    seg.className = cls;
+    gauge.appendChild(seg);
+  });
+  document.getElementById('gaugeText').textContent = `証拠 ${foundCount} 選択中`;
+  document.getElementById('gaugeExclText').textContent = `除外 ${exclCount} 件`;
+
+  const list = document.getElementById('evidenceList');
+  list.innerHTML = '';
+  EVIDENCE.forEach(ev => {
+    const state = evState[ev.id];
+    const row = document.createElement('div');
+    row.className = 'ev-row' + (state === 'found' ? ' is-found' : '') + (state === 'excluded' ? ' is-excluded' : '');
+    row.style.setProperty('--c', ev.color);
+
+    const foundDisabledLook = state !== 'found' && wouldEliminateAll(ev.id, 'found');
+    const exclDisabledLook = state !== 'excluded' && wouldEliminateAll(ev.id, 'excluded');
+
+    const info = document.createElement('div');
+    info.className = 'ev-info';
+    info.innerHTML = `<span class="dot"></span><span class="ev-label">${ev.label}<span class="ev-en">${ev.en}</span></span>`;
+
+    const actions = document.createElement('div');
+    actions.className = 'ev-actions';
+
+    const foundBtn = document.createElement('button');
+    foundBtn.type = 'button';
+    foundBtn.className = 'ev-pill found-btn' + (state==='found' ? ' active' : '') + (foundDisabledLook ? ' dimmed' : '');
+    foundBtn.textContent = 'あり';
+    foundBtn.addEventListener('click', function(e){ e.preventDefault(); setState(ev.id, 'found'); });
+
+    const exclBtn = document.createElement('button');
+    exclBtn.type = 'button';
+    exclBtn.className = 'ev-pill excl-btn' + (state==='excluded' ? ' active' : '') + (exclDisabledLook ? ' dimmed' : '');
+    exclBtn.textContent = 'なし';
+    exclBtn.addEventListener('click', function(e){ e.preventDefault(); setState(ev.id, 'excluded'); });
+
+    actions.appendChild(foundBtn);
+    actions.appendChild(exclBtn);
+    row.appendChild(info);
+    row.appendChild(actions);
+    list.appendChild(row);
+  });
+
+  const evFiltered = GHOSTS.filter(matches);
+  const visible = evFiltered.filter(g => !manuallyExcluded.has(g.en));
+  const hiddenByManual = evFiltered.filter(g => manuallyExcluded.has(g.en));
+
+  document.getElementById('resultCount').textContent = `${visible.length} / ${GHOSTS.length}`;
+  const area = document.getElementById('resultsArea');
+  area.innerHTML = '';
+
+  if(visible.length === 0){
+    const msg = evFiltered.length === 0
+      ? '「あり」と「なし」の組み合わせに矛盾があります。証拠の見間違いがないか確認してください。'
+      : 'すべての候補が手動で除外されています。下の「手動で除外したゴースト」から復元できます。';
+    area.innerHTML = `<div class="empty-state"><span class="big">該当するゴーストがいません</span>${msg}</div>`;
+  } else {
+    const ul = document.createElement('div');
+    ul.className = 'ghost-list';
+
+    visible.forEach(g => {
+      const card = document.createElement('div');
+      const isOpen = openCards.has(g.en);
+      card.className = 'ghost-card' + (isOpen ? ' open' : '');
+
+      const chips = EVIDENCE.map(ev => {
+        const hit = g.ev.includes(ev.id);
+        return `<span class="chip ${hit ? 'hit' : ''}" style="border-color:${ev.color}; color:${hit ? ev.color : 'var(--muted)'}">${ev.label}</span>`;
+      }).join('');
+
+      const top = document.createElement('div');
+      top.className = 'ghost-top';
+
+      const nameBtn = document.createElement('button');
+      nameBtn.type = 'button';
+      nameBtn.className = 'ghost-name-btn';
+      nameBtn.innerHTML = `<span class="ghost-name">${g.name}<span class="en">${g.en}</span></span><span class="chev">▶</span>`;
+      nameBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        if(isOpen){ openCards.delete(g.en); } else { openCards.add(g.en); }
+        render();
+      });
+
+      const exBtn = document.createElement('button');
+      exBtn.type = 'button';
+      exBtn.className = 'exclude-ghost-btn';
+      exBtn.textContent = '除外';
+      exBtn.addEventListener('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        excludeGhost(g.en);
+      });
+
+      top.appendChild(nameBtn);
+      top.appendChild(exBtn);
+
+      const chipsDiv = document.createElement('div');
+      chipsDiv.className = 'ev-chips';
+      chipsDiv.innerHTML = chips;
+
+      const detail = document.createElement('div');
+      detail.className = 'ghost-detail';
+      detail.innerHTML = `<div class="ghost-detail-inner">${g.trait}</div>`;
+
+      card.appendChild(top);
+      card.appendChild(chipsDiv);
+      card.appendChild(detail);
+      ul.appendChild(card);
+    });
+
+    area.appendChild(ul);
+  }
+
+  // manually-excluded panel (persists regardless of current evidence filter, so user can always restore)
+  const excludedPanel = document.getElementById('excludedPanel');
+  const excludedList = document.getElementById('excludedList');
+  const excludedToggleLabel = document.getElementById('excludedToggleLabel');
+
+  if(manuallyExcluded.size === 0){
+    excludedPanel.style.display = 'none';
+  } else {
+    excludedPanel.style.display = 'block';
+    excludedToggleLabel.textContent = `手動で除外したゴースト (${manuallyExcluded.size})`;
+    excludedList.className = 'excluded-list' + (excludedListOpen ? ' open' : '');
+    excludedList.innerHTML = '';
+    [...manuallyExcluded].forEach(en => {
+      const g = GHOSTS.find(x => x.en === en);
+      if(!g) return;
+      const item = document.createElement('div');
+      item.className = 'excluded-item';
+      const nm = document.createElement('span');
+      nm.className = 'nm';
+      nm.textContent = `${g.name} (${g.en})`;
+      const rb = document.createElement('button');
+      rb.type = 'button';
+      rb.className = 'restore-btn';
+      rb.textContent = '復元';
+      rb.addEventListener('click', function(e){ e.preventDefault(); restoreGhost(en); });
+      item.appendChild(nm);
+      item.appendChild(rb);
+      excludedList.appendChild(item);
+    });
+  }
+}
+
+document.getElementById('resetBtn').addEventListener('click', function(e){
+  e.preventDefault();
+  Object.keys(evState).forEach(k => delete evState[k]);
+  manuallyExcluded.clear();
+  render();
+});
+
+document.getElementById('excludedToggle').addEventListener('click', function(e){
+  e.preventDefault();
+  excludedListOpen = !excludedListOpen;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
