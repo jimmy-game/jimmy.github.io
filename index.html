@@ -151,6 +151,25 @@
   }
   .ghost-name{font-size:15px;font-weight:700;color:#f2fbf5;}
   .ghost-name .en{font-family:'JetBrains Mono',monospace;font-weight:400;font-size:11px;color:var(--muted);margin-left:7px;}
+  .ghost-stats{
+    display:grid;
+    grid-template-columns:64px 1fr;
+    row-gap:5px;
+    column-gap:10px;
+    margin-top:10px;
+    padding-top:9px;
+    border-top:1px solid var(--panel-border);
+  }
+  .ghost-stats .stat-label{
+    font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+    white-space:nowrap;padding-top:1px;
+  }
+  .ghost-stats .stat-value{
+    font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;
+  }
+  .ghost-stats .stat-value.speed{color:#cbd5e1;}
+  .ghost-stats .stat-value.los{color:#cbd5e1;}
+  .ghost-stats .stat-value.hunt{color:#cbd5e1;}
   .chev{color:var(--muted);font-size:12px;transition:transform .2s ease;flex-shrink:0;}
   .ghost-card.open .chev{transform:rotate(90deg);}
 
@@ -165,6 +184,10 @@
   .ev-chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
   .chip{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 7px;border-radius:20px;border:1px solid;opacity:0.5;}
   .chip.hit{opacity:1;font-weight:700;}
+  .chip.fake{
+    opacity:0.85;border-style:dashed;border-color:var(--muted);color:var(--muted);
+    font-style:italic;background:repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 4px, transparent 4px 8px);
+  }
 
   .ghost-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;}
   .ghost-card.open .ghost-detail{max-height:200px;}
@@ -240,7 +263,7 @@
 
   <section>
     <div class="info-box">
-      <b>使い方のヒント：</b>証拠が「ある」ことを確認できたら緑の「あり」を、他の証拠を試して確実に出ない（＝除外できる）とわかったら赤の「なし」をタップしてください。候補ゴーストの「除外」ボタンは、行動特性など証拠以外の理由でそのゴーストを候補から外したいときに使えます。ナイトメア/インサニティ難易度で証拠が少ない場合は、「なし」の除外だけでも候補を絞り込めます。
+      <b>使い方のヒント：</b>証拠が「ある」ことを確認できたら緑の「あり」を、他の証拠を試して確実に出ない（＝除外できる）とわかったら赤の「なし」をタップしてください。候補名の横の灰色バッジはハント中の移動速度、紫バッジはハントライン（ハントを開始する正気度）です。候補ゴーストの「除外」ボタンは、行動特性など証拠以外の理由でそのゴーストを候補から外したいときに使えます。ナイトメア/インサニティ難易度で証拠が少ない場合は、「なし」の除外だけでも候補を絞り込めます。なお、ミミックが出す「ゴーストオーブ（偽証拠）」は破線表示になっており、実際の証拠としては扱われません（オーブの有無で候補から除外されません）。
     </div>
   </section>
 
@@ -259,36 +282,36 @@ const EVIDENCE = [
 ];
 
 const GHOSTS = [
-  {name:'スピリット', en:'Spirit', ev:['emf','box','wrt'], trait:'特別な能力を持たない標準ゴースト。浄化香の効果が180秒間続く（通常は90秒）。'},
-  {name:'レイス', en:'Wraith', ev:['emf','box','dot'], trait:'塩を踏まない。ハント以外の時にもプレイヤーの元へワープすることがあり、その際EMFレベル2の反応が出る。'},
-  {name:'ファントム', en:'Phantom', ev:['box','uv','dot'], trait:'ランダムにプレイヤーの元へ移動する（移動中はハントしない）。写真や動画を撮ると姿が消え写り込まない。実体化中は心音が聞こえるだけで正気度が徐々に減る。'},
-  {name:'ポルターガイスト', en:'Poltergeist', ev:['box','uv','wrt'], trait:'物への干渉が多く、投げる際に遠くまで飛ばすことがある。ハント中は0.5秒ごとに100%の確率で物を投げる（通常は50%）。'},
-  {name:'バンシー', en:'Banshee', ev:['orb','uv','dot'], trait:'女性限定で出現し、狙った1人の調査員だけを執拗に追う。ハント中もターゲット以外は殺されない。歌う超常現象でターゲットの正気度減少量が5%増加し、いつでも長距離徘徊ができる。'},
-  {name:'ジン', en:'Jinn', ev:['emf','frz','uv'], trait:'プレイヤーを視認すると近づくまで高速で固定移動し、3m以内に近づくか見失うと通常速度に戻る。ブレーカーが落ちているとこの能力を使えず、自らブレーカーを下げることもない。'},
-  {name:'メアー', en:'Mare', ev:['orb','box','wrt'], trait:'メイン照明がオンだと正気度40%以下、オフだと60%以下でハントを開始する。照明を消したがり、超常現象で照明を破壊する確率も高い。照明がオンの部屋では長距離徘徊が可能。'},
-  {name:'レヴナント', en:'Revenant', ev:['orb','frz','wrt'], trait:'普段は低速移動だが、プレイヤーを感知すると瞬時に3m/sまで加速する。通常の視認加速とは別の仕組み。'},
-  {name:'シェード', en:'Shade', ev:['emf','frz','wrt'], trait:'同じ部屋にプレイヤーがいると干渉・超常現象・自然ハントを一切起こさない。歌う超常現象もしない。'},
-  {name:'デーモン', en:'Demon', ev:['frz','uv','wrt'], trait:'ハント開始正気度を無視してハントを行う。浄化香の効果は60秒しか持たず（通常90秒）、最速で20秒間隔（通常25秒）のハントを行うこともある。十字架の有効範囲は通常の1.5倍。'},
-  {name:'幽霊', en:'Yurei', ev:['orb','frz','dot'], trait:'近くの正気度を15%減少させ、同時に部屋の扉を1枚完全に閉める（半端に開閉しない）。スマッジを当てると非ハント時に90秒間ゴーストルームへ拘束される。'},
-  {name:'鬼', en:'Oni', ev:['emf','frz','dot'], trait:'ハント中に実体化している時間が長い。超常現象を受けた際の正気度減少量が通常の2倍で、超常現象自体の頻度も高い。'},
-  {name:'妖怪', en:'Yokai', ev:['orb','box','dot'], trait:'近くの電子機器や声にしか反応しない（感知範囲2.5m、通常9m）。同室でボイスチャットや無線を使うとハント開始正気度が80%以下まで上がる。'},
-  {name:'ハントゥ', en:'Hantu', ev:['orb','frz','uv'], trait:'必ず氷点下の証拠を出す。室温が低いほど速く動き（0℃以下で2.7m/s、15℃以上で1.4m/s）、視認加速はしない。ブレーカーを自分から上げることはない。'},
-  {name:'御霊', en:'Goryo', ev:['emf','uv','dot'], trait:'必ずD.O.T.S.の証拠を出すが、プレイヤーと同室にいる時は出さない。ゴーストルームからほとんど移動せず、ビデオカメラ越しでないとD.O.T.S.に映らない。'},
-  {name:'マイリング', en:'Myling', ev:['emf','uv','wrt'], trait:'ハント中の足音や声が聞こえる範囲が狭い（12m、通常20m）。指向性マイクで聞こえる怪奇音のクールタイムも64秒と短い（通常80秒）。'},
-  {name:'怨霊', en:'Onryo', ev:['orb','box','frz'], trait:'火を3回吹き消すごとに正気度を無視してハントする。灯った炎は十字架の代わりになり、自分では火をつけない。死亡した調査員が増えるほど火を消す頻度が上がる。'},
-  {name:'ツインズ', en:'The Twins', ev:['emf','box','frz'], trait:'実際は1体だが2体分の行動を見せる。メインは通常の88%の速度、サブは112%の速度で移動する。'},
-  {name:'雷獣', en:'Raiju', ev:['emf','orb','dot'], trait:'稼働中の電子機器が近くにあるとハント中に高速固定になる。電子機器を誤作動させる距離・心音が聞こえる距離がどちらも15mと通常より長い。'},
-  {name:'化け狐', en:'Obake', ev:['emf','orb','uv'], trait:'指紋の表示時間が通常の半分。物に触れても指紋を残さないことがある一方、指の本数が増えた特殊な指紋を残すことも。ハント中の点滅時に別のゴーストモデルへ変化する。'},
-  {name:'ミミック', en:'The Mimic', ev:['box','frz','uv'], trait:'他のゴーストの特徴を模倣する。証拠にはカウントされないが、ゴーストルームに必ずゴーストオーブを出す（証拠0の状態でも見える）。'},
-  {name:'モーロイ', en:'Moroi', ev:['box','frz','wrt'], trait:'声を聞いたプレイヤーに正気度が倍速で減る呪いをかける（照明でも止められない）。正気度が下がるほど移動速度が上がり、浄化香を当てると7秒間見失う（通常5秒）。'},
-  {name:'デオヘン', en:'Deogen', ev:['box','wrt','dot'], trait:'ハント中は常にプレイヤーの位置を把握しているため隠れても見つかる。プレイヤーから遠いと非常に速いが、2.5m以内まで近づくと極端に遅くなる。'},
-  {name:'セーイ', en:'Thaye', ev:['orb','wrt','dot'], trait:'契約序盤（正気度74%以下）は2.75m/sと速いが、時間経過で老化すると正気度14%以下まで下がり、移動速度も1m/sまで落ちる。視認加速はしない。'},
-  {name:'ガルル', en:'Gallu', ev:['emf','box','uv'], trait:'防護装備（浄化香・十字架・塩）を使われると激昂し、激昂中にハントを終えると疲弊する。激昂中は移動が速く塩を踏まなくなり、疲弊中は動きが遅くなる。'},
-  {name:'オバンボ', en:'Obambo', ev:['uv','wrt','dot'], trait:'外扉解錠1分後を最初に、以降2分ごとに「穏やか」と「攻撃的」を切り替える。攻撃的な時は移動が速くハントも短時間で終わるが、穏やかな時は干渉・超常現象が多い。'},
-  {name:'アスワング', en:'Aswang', ev:['frz','wrt','dot'], trait:'通常ゴーストの90%の速度で移動するが、最大視認加速には約2/3の時間で到達する。公式の隠れ場所にいる調査員はキルせずハントを中断し、次のハントでその調査員の位置へ向かう。'},
-  {name:'コルモス', en:'Kormos', ev:['orb','box','uv'], trait:'5m以内で足音を立てない限り視認できない。足音や声・電子機器を感知すると130%の速度で追跡し、視認せずとも距離だけでキルが成立する。'},
-  {name:'ダヤン', en:'Dayan', ev:['emf','orb','box'], trait:'必ず女性の姿で出現する。10m以内の人が動いていると高速でハントし、立ち止まっていると低速になる。'},
-  {name:'ディルデガスト', en:'Deildegast', ev:['emf','wrt','dot'], trait:'ハント時の基本移動速度は3m/sと非常に速く、視認加速はない。ハント前に調査員が動かした配置物（拾う・操作した物）の数に応じて減速し、1個につき約0.1m/s低下、26個前後で最低速度0.4m/sまで落ちる。速度はハント終了時か十字架使用後にリセットされる。'},
+  {name:'スピリット', en:'Spirit', ev:['emf','box','wrt'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'特別な能力を持たない標準ゴースト。浄化香の効果が180秒間続く（通常は90秒）。'},
+  {name:'レイス', en:'Wraith', ev:['emf','box','dot'], speed:'標準 1.7m/s（テレポートあり）', los:'あり（標準）', hunt:'50%以下', trait:'塩を踏まない。ハント以外の時にもプレイヤーの元へワープすることがあり、その際EMFレベル2の反応が出る。'},
+  {name:'ファントム', en:'Phantom', ev:['box','uv','dot'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'ランダムにプレイヤーの元へ移動する（移動中はハントしない）。写真や動画を撮ると姿が消え写り込まない。実体化中は心音が聞こえるだけで正気度が徐々に減る。'},
+  {name:'ポルターガイスト', en:'Poltergeist', ev:['box','uv','wrt'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'物への干渉が多く、投げる際に遠くまで飛ばすことがある。ハント中は0.5秒ごとに100%の確率で物を投げる（通常は50%）。'},
+  {name:'バンシー', en:'Banshee', ev:['orb','uv','dot'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'ターゲット個人の正気度50%以下', trait:'女性限定で出現し、狙った1人の調査員だけを執拗に追う。ハント中もターゲット以外は殺されない。歌う超常現象でターゲットの正気度減少量が5%増加し、いつでも長距離徘徊ができる。'},
+  {name:'ジン', en:'Jinn', ev:['emf','frz','uv'], speed:'視認時(3m超&ブレーカーON)：2.5m/s固定 ⇔ 通常：1.7m/s', los:'条件次第（視認+3m超+ブレーカーON時は固定速度／それ以外は標準通り加速あり）', hunt:'50%以下', trait:'プレイヤーを視認すると近づくまで高速で固定移動し、3m以内に近づくか見失うと通常速度に戻る。ブレーカーが落ちているとこの能力を使えず、自らブレーカーを下げることもない。'},
+  {name:'メアー', en:'Mare', ev:['orb','box','wrt'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'照明On：40%以下 ⇔ Off：60%以下', trait:'メイン照明がオンだと正気度40%以下、オフだと60%以下でハントを開始する。照明を消したがり、超常現象で照明を破壊する確率も高い。照明がオンの部屋では長距離徘徊が可能。'},
+  {name:'レヴナント', en:'Revenant', ev:['orb','frz','wrt'], speed:'未発見：1.0m/s → 発見時：瞬時に3.0m/s', los:'なし（代わりに感知した瞬間だけ固有の急加速）', hunt:'50%以下', trait:'普段は低速移動だが、プレイヤーを感知すると瞬時に3m/sまで加速する。通常の視認加速とは別の仕組み。'},
+  {name:'シェード', en:'Shade', ev:['emf','frz','wrt'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'35%以下', trait:'同じ部屋にプレイヤーがいると干渉・超常現象・自然ハントを一切起こさない。歌う超常現象もしない。'},
+  {name:'デーモン', en:'Demon', ev:['frz','uv','wrt'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'70%以下（開始正気度を無視してハント）', trait:'ハント開始正気度を無視してハントを行う。浄化香の効果は60秒しか持たず（通常90秒）、最速で20秒間隔（通常25秒）のハントを行うこともある。十字架の有効範囲は通常の1.5倍。'},
+  {name:'幽霊', en:'Yurei', ev:['orb','frz','dot'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'近くの正気度を15%減少させ、同時に部屋の扉を1枚完全に閉める（半端に開閉しない）。スマッジを当てると非ハント時に90秒間ゴーストルームへ拘束される。'},
+  {name:'鬼', en:'Oni', ev:['emf','frz','dot'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'ハント中に実体化している時間が長い。超常現象を受けた際の正気度減少量が通常の2倍で、超常現象自体の頻度も高い。'},
+  {name:'妖怪', en:'Yokai', ev:['orb','box','dot'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下（VC/無線使用時は80%以下）', trait:'近くの電子機器や声にしか反応しない（感知範囲2.5m、通常9m）。同室でボイスチャットや無線を使うとハント開始正気度が80%以下まで上がる。'},
+  {name:'ハントゥ', en:'Hantu', ev:['orb','frz','uv'], speed:'0℃以下：2.7m/s ⇔ 15℃以上：1.4m/s', los:'なし', hunt:'50%以下', trait:'必ず氷点下の証拠を出す。室温が低いほど速く動き（0℃以下で2.7m/s、15℃以上で1.4m/s）、視認加速はしない。ブレーカーを自分から上げることはない。'},
+  {name:'御霊', en:'Goryo', ev:['emf','uv','dot'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'必ずD.O.T.S.の証拠を出すが、プレイヤーと同室にいる時は出さない。ゴーストルームからほとんど移動せず、ビデオカメラ越しでないとD.O.T.S.に映らない。'},
+  {name:'マイリング', en:'Myling', ev:['emf','uv','wrt'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'ハント中の足音や声が聞こえる範囲が狭い（12m、通常20m）。指向性マイクで聞こえる怪奇音のクールタイムも64秒と短い（通常80秒）。'},
+  {name:'怨霊', en:'Onryo', ev:['orb','box','frz'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'60%以下（4m以内に火があると40%以下）', trait:'火を3回吹き消すごとに正気度を無視してハントする。灯った炎は十字架の代わりになり、自分では火をつけない。死亡した調査員が増えるほど火を消す頻度が上がる。'},
+  {name:'ツインズ', en:'The Twins', ev:['emf','box','frz'], speed:'メイン：約1.5m/s(88%) ⇔ サブ：約1.9m/s(112%)', los:'あり（標準）', hunt:'50%以下', trait:'実際は1体だが2体分の行動を見せる。メインは通常の88%の速度、サブは112%の速度で移動する。'},
+  {name:'雷獣', en:'Raiju', ev:['emf','orb','dot'], speed:'電子機器付近：2.5m/s固定 ⇔ 通常：1.7m/s', los:'条件次第（電子機器付近では固定速度／それ以外は標準通り加速あり）', hunt:'50%以下（電子機器が近くだと65%以下）', trait:'稼働中の電子機器が近くにあるとハント中に高速固定になる。電子機器を誤作動させる距離・心音が聞こえる距離がどちらも15mと通常より長い。'},
+  {name:'化け狐', en:'Obake', ev:['emf','orb','uv'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'指紋の表示時間が通常の半分。物に触れても指紋を残さないことがある一方、指の本数が増えた特殊な指紋を残すことも。ハント中の点滅時に別のゴーストモデルへ変化する。'},
+  {name:'ミミック', en:'The Mimic', ev:['box','frz','uv'], fakeEv:['orb'], speed:'模倣元のゴーストに依存', los:'模倣元のゴーストに準じる', hunt:'模倣元のゴーストに依存', trait:'他のゴーストの特徴を模倣する。証拠にはカウントされないが、ゴーストルームに必ずゴーストオーブを出す（証拠0の状態でも見える）。'},
+  {name:'モーロイ', en:'Moroi', ev:['box','frz','wrt'], speed:'正気度45%以上：1.5m/s → 0〜5%：2.25m/s（視認継続で最大3.71m/s）', los:'あり（独自方式、継続視認で段階的に上昇し最大3.71m/s）', hunt:'50%以下', trait:'声を聞いたプレイヤーに正気度が倍速で減る呪いをかける（照明でも止められない）。正気度が下がるほど移動速度が上がり、浄化香を当てると7秒間見失う（通常5秒）。'},
+  {name:'デオヘン', en:'Deogen', ev:['box','wrt','dot'], speed:'2.5m以内：0.4m/s ⇔ 6m超：3.0m/s（距離で連続変化）', los:'なし（時間ではなく距離で速度が変わる）', hunt:'40%以下', trait:'ハント中は常にプレイヤーの位置を把握しているため隠れても見つかる。プレイヤーから遠いと非常に速いが、2.5m以内まで近づくと極端に遅くなる。'},
+  {name:'セーイ', en:'Thaye', ev:['orb','wrt','dot'], speed:'若い時：2.75m/s → 老化後：1.0m/s', los:'なし', hunt:'74%以下 ～ 老化後14%以下', trait:'契約序盤（正気度74%以下）は2.75m/sと速いが、時間経過で老化すると正気度14%以下まで下がり、移動速度も1m/sまで落ちる。視認加速はしない。'},
+  {name:'ガルル', en:'Gallu', ev:['emf','box','uv'], speed:'激昂：1.955m/s ⇔ 疲弊：1.360m/s', los:'あり（標準、表記の値は各状態の基準速度）', hunt:'通常50%以下（激昂60%以下／疲弊40%以下）', trait:'防護装備（浄化香・十字架・塩）を使われると激昂し、激昂中にハントを終えると疲弊する。激昂中は移動が速く塩を踏まなくなり、疲弊中は動きが遅くなる。'},
+  {name:'オバンボ', en:'Obambo', ev:['uv','wrt','dot'], speed:'穏やか：1.445m/s ⇔ 攻撃的：1.955m/s（視認継続で最大約3.23m/s）', los:'あり（攻撃的状態は視認持続で最大約3.23m/sまで上昇）', hunt:'穏やか：10%以下 ⇔ 攻撃的：65%以下', trait:'外扉解錠1分後を最初に、以降2分ごとに「穏やか」と「攻撃的」を切り替える。攻撃的な時は移動が速くハントも短時間で終わるが、穏やかな時は干渉・超常現象が多い。'},
+  {name:'アスワング', en:'Aswang', ev:['frz','wrt','dot'], speed:'標準の90%（約1.53m/s）、加速上限2.53m/sに約8.7秒で到達', los:'あり（通常より加速が速く、上限2.53m/sに約8.7秒で到達）', hunt:'50%以下', trait:'通常ゴーストの90%の速度で移動するが、最大視認加速には約2/3の時間で到達する。公式の隠れ場所にいる調査員はキルせずハントを中断し、次のハントでその調査員の位置へ向かう。'},
+  {name:'コルモス', en:'Kormos', ev:['orb','box','uv'], speed:'感知追跡時：約2.21m/s（標準の130%）', los:'条件次第（追跡発動中は視認ではなく足音等で固定速度）', hunt:'通常50%以下（同室で走行を感知すると70%以下）', trait:'5m以内で足音を立てない限り視認できない。足音や声・電子機器を感知すると130%の速度で追跡し、視認せずとも距離だけでキルが成立する。'},
+  {name:'ダヤン', en:'Dayan', ev:['emf','orb','box'], speed:'近くの人が静止：1.2m/s固定 ⇔ 動いている：2.25m/s固定', los:'条件次第（10m以内に人がいる間は固定速度、範囲外に出ると蓄積分が適用）', hunt:'10m以内：静止時45%以下／移動時65%以下、無人時50%以下', trait:'必ず女性の姿で出現する。10m以内の人が動いていると高速でハントし、立ち止まっていると低速になる。'},
+  {name:'ディルデガスト', en:'Deildegast', ev:['emf','wrt','dot'], speed:'3.0m/s ~ 0.4m/s（動かされた配置物数に依存）', los:'なし（配置物を動かした数に依存）', hunt:'平均50%以下', trait:'ハント時の基本移動速度は3m/sと非常に速く、視認加速はない。ハント前に調査員が動かした配置物（拾う・操作した物）の数に応じて減速し、1個につき約0.1m/s低下、26個前後で最低速度0.4m/sまで落ちる。速度はハント終了時か十字架使用後にリセットされる。'},
 ];
 
 // evState[id] = 'found' | 'excluded'  (absent key = neutral)
@@ -298,9 +321,10 @@ const manuallyExcluded = new Set(); // stores ghost.en
 let excludedListOpen = false;
 
 function satisfies(ghost, stateObj){
+  const effectiveEv = ghost.fakeEv ? ghost.ev.concat(ghost.fakeEv) : ghost.ev;
   for(const id in stateObj){
-    if(stateObj[id] === 'found' && !ghost.ev.includes(id)) return false;
-    if(stateObj[id] === 'excluded' && ghost.ev.includes(id)) return false;
+    if(stateObj[id] === 'found' && !effectiveEv.includes(id)) return false;
+    if(stateObj[id] === 'excluded' && effectiveEv.includes(id)) return false;
   }
   return true;
 }
@@ -412,7 +436,10 @@ function render(){
       const chips = EVIDENCE.map(ev => {
         const hit = g.ev.includes(ev.id);
         return `<span class="chip ${hit ? 'hit' : ''}" style="border-color:${ev.color}; color:${hit ? ev.color : 'var(--muted)'}">${ev.label}</span>`;
-      }).join('');
+      }).join('') + (g.fakeEv ? g.fakeEv.map(id => {
+        const ev = EVIDENCE.find(e => e.id === id);
+        return `<span class="chip fake" title="証拠としては扱われない偽の反応">${ev.label}（偽証拠）</span>`;
+      }).join('') : '');
 
       const top = document.createElement('div');
       top.className = 'ghost-top';
@@ -440,6 +467,14 @@ function render(){
       top.appendChild(nameBtn);
       top.appendChild(exBtn);
 
+      const statsDiv = document.createElement('div');
+      statsDiv.className = 'ghost-stats';
+      statsDiv.innerHTML = `
+        ${g.speed ? `<span class="stat-label">速度</span><span class="stat-value speed">${g.speed}</span>` : ''}
+        ${g.los ? `<span class="stat-label">視認加速</span><span class="stat-value los">${g.los}</span>` : ''}
+        ${g.hunt ? `<span class="stat-label">ハントライン</span><span class="stat-value hunt">${g.hunt}</span>` : ''}
+      `;
+
       const chipsDiv = document.createElement('div');
       chipsDiv.className = 'ev-chips';
       chipsDiv.innerHTML = chips;
@@ -449,6 +484,7 @@ function render(){
       detail.innerHTML = `<div class="ghost-detail-inner">${g.trait}</div>`;
 
       card.appendChild(top);
+      card.appendChild(statsDiv);
       card.appendChild(chipsDiv);
       card.appendChild(detail);
       ul.appendChild(card);
