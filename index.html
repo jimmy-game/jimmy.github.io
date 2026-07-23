@@ -153,23 +153,27 @@
   .ghost-name .en{font-family:'JetBrains Mono',monospace;font-weight:400;font-size:11px;color:var(--muted);margin-left:7px;}
   .ghost-stats{
     display:grid;
-    grid-template-columns:64px 1fr;
-    row-gap:5px;
+    grid-template-columns:92px 1fr;
+    row-gap:6px;
     column-gap:10px;
-    margin-top:10px;
-    padding-top:9px;
-    border-top:1px solid var(--panel-border);
   }
   .ghost-stats .stat-label{
-    font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);
+    font-family:'JetBrains Mono',monospace;font-size:10px;
     white-space:nowrap;padding-top:1px;
+    display:flex;align-items:center;gap:5px;
   }
+  .ghost-stats .stat-label::before{
+    content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  }
+  .ghost-stats .stat-label.speed{color:#9fb8d9;}
+  .ghost-stats .stat-label.speed::before{background:#9fb8d9;}
+  .ghost-stats .stat-label.los{color:#8fcdbf;}
+  .ghost-stats .stat-label.los::before{background:#8fcdbf;}
+  .ghost-stats .stat-label.hunt{color:#bfa3d9;}
+  .ghost-stats .stat-label.hunt::before{background:#bfa3d9;}
   .ghost-stats .stat-value{
-    font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;
+    font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;color:#e5ecf0;
   }
-  .ghost-stats .stat-value.speed{color:#cbd5e1;}
-  .ghost-stats .stat-value.los{color:#cbd5e1;}
-  .ghost-stats .stat-value.hunt{color:#cbd5e1;}
   .chev{color:var(--muted);font-size:12px;transition:transform .2s ease;flex-shrink:0;}
   .ghost-card.open .chev{transform:rotate(90deg);}
 
@@ -189,9 +193,10 @@
     font-style:italic;background:repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0 4px, transparent 4px 8px);
   }
 
-  .ghost-detail{max-height:0;overflow:hidden;transition:max-height .25s ease;}
-  .ghost-card.open .ghost-detail{max-height:200px;}
+  .ghost-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+  .ghost-card.open .ghost-detail{max-height:420px;}
   .ghost-detail-inner{padding-top:10px;margin-top:10px;border-top:1px solid var(--panel-border);font-size:12.5px;color:var(--muted);line-height:1.7;}
+  .ghost-trait-text{margin-top:10px;padding-top:10px;border-top:1px dashed var(--panel-border);}
 
   .excluded-panel{margin-top:12px;}
   .excluded-toggle{
@@ -263,7 +268,7 @@
 
   <section>
     <div class="info-box">
-      <b>使い方のヒント：</b>証拠が「ある」ことを確認できたら緑の「あり」を、他の証拠を試して確実に出ない（＝除外できる）とわかったら赤の「なし」をタップしてください。候補名の横の灰色バッジはハント中の移動速度、紫バッジはハントライン（ハントを開始する正気度）です。候補ゴーストの「除外」ボタンは、行動特性など証拠以外の理由でそのゴーストを候補から外したいときに使えます。ナイトメア/インサニティ難易度で証拠が少ない場合は、「なし」の除外だけでも候補を絞り込めます。なお、ミミックが出す「ゴーストオーブ（偽証拠）」は破線表示になっており、実際の証拠としては扱われません（オーブの有無で候補から除外されません）。
+      <b>使い方のヒント：</b>証拠が「ある」ことを確認できたら緑の「あり」を、他の証拠を試して確実に出ない（＝除外できる）とわかったら赤の「なし」をタップしてください。候補ゴーストの名前をタップすると、移動速度・視認加速の有無・ハントライン・行動特性がまとめて開きます（色付きの点で速度／視認加速／ハントラインを見分けられます）。「除外」ボタンは、行動特性など証拠以外の理由でそのゴーストを候補から外したいときに使えます。ナイトメア/インサニティ難易度で証拠が少ない場合は、「なし」の除外だけでも候補を絞り込めます。なお、ミミックが出す「ゴーストオーブ（偽証拠）」は破線表示になっており、実際の証拠としては扱われません（オーブの有無で候補から除外されません）。
     </div>
   </section>
 
@@ -467,24 +472,24 @@ function render(){
       top.appendChild(nameBtn);
       top.appendChild(exBtn);
 
-      const statsDiv = document.createElement('div');
-      statsDiv.className = 'ghost-stats';
-      statsDiv.innerHTML = `
-        ${g.speed ? `<span class="stat-label">速度</span><span class="stat-value speed">${g.speed}</span>` : ''}
-        ${g.los ? `<span class="stat-label">視認加速</span><span class="stat-value los">${g.los}</span>` : ''}
-        ${g.hunt ? `<span class="stat-label">ハントライン</span><span class="stat-value hunt">${g.hunt}</span>` : ''}
-      `;
-
       const chipsDiv = document.createElement('div');
       chipsDiv.className = 'ev-chips';
       chipsDiv.innerHTML = chips;
 
       const detail = document.createElement('div');
       detail.className = 'ghost-detail';
-      detail.innerHTML = `<div class="ghost-detail-inner">${g.trait}</div>`;
+      detail.innerHTML = `
+        <div class="ghost-detail-inner">
+          <div class="ghost-stats">
+            ${g.speed ? `<span class="stat-label speed">速度</span><span class="stat-value speed">${g.speed}</span>` : ''}
+            ${g.los ? `<span class="stat-label los">視認加速</span><span class="stat-value los">${g.los}</span>` : ''}
+            ${g.hunt ? `<span class="stat-label hunt">ハントライン</span><span class="stat-value hunt">${g.hunt}</span>` : ''}
+          </div>
+          <div class="ghost-trait-text">${g.trait}</div>
+        </div>
+      `;
 
       card.appendChild(top);
-      card.appendChild(statsDiv);
       card.appendChild(chipsDiv);
       card.appendChild(detail);
       ul.appendChild(card);
