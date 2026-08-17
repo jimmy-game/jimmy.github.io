@@ -194,9 +194,37 @@
   }
 
   .ghost-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;}
-  .ghost-card.open .ghost-detail{max-height:420px;}
+  .ghost-card.open .ghost-detail{max-height:900px;}
   .ghost-detail-inner{padding-top:10px;margin-top:10px;border-top:1px solid var(--panel-border);font-size:12.5px;color:var(--muted);line-height:1.7;}
   .ghost-trait-text{margin-top:10px;padding-top:10px;border-top:1px dashed var(--panel-border);}
+
+  .name-box{
+    margin-top:12px;
+    background:#10160f;
+    border:1px solid var(--panel-border);
+    border-radius:10px;
+    padding:11px 12px;
+  }
+  .name-box-title{
+    width:100%;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);
+    letter-spacing:0.04em;display:flex;justify-content:space-between;align-items:center;
+    background:none;border:none;padding:0;cursor:pointer;-webkit-user-select:none;user-select:none;
+  }
+  .name-box-count{color:#a5b4fc;font-size:10px;margin-left:6px;}
+  .name-box-chev{transition:transform .2s ease;color:var(--muted);}
+  .name-box-chev.open{transform:rotate(90deg);}
+  .name-chip-grid{
+    display:flex;flex-wrap:wrap;gap:6px;
+    max-height:0;overflow:hidden;
+    transition:max-height .3s ease, margin-top .3s ease;
+  }
+  .name-chip-grid.open{max-height:600px;margin-top:9px;}
+  .name-chip{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text);
+    background:rgba(255,255,255,0.04);border:1px solid var(--panel-border);
+    border-radius:6px;padding:4px 8px;
+  }
 
   .excluded-panel{margin-top:12px;}
   .excluded-toggle{
@@ -332,7 +360,7 @@
     </div>
   </section>
 
-  <footer>PHASMOPHOBIA GHOST IDENTIFICATION — Created by Jimmy</footer>
+  <footer>PHASMOPHOBIA GHOST IDENTIFICATION — Created by Meme</footer>
 </div>
 
 <script>
@@ -365,34 +393,34 @@ const LOS_GROUPS = [
 
 const GHOSTS = [
   {name:'スピリット', en:'Spirit', ev:['emf','box','wrt'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'特別な能力を持たない標準ゴースト。浄化香の効果が180秒間続く（通常は90秒）。'},
-  {name:'レイス', en:'Wraith', ev:['emf','box','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s（テレポートあり）', los:'あり（標準）', hunt:'50%以下', trait:'塩を踏まない。特殊能力でランダムな調査員の元へワープした際、EMFレベル2が発生する。'},
+  {name:'レイス', en:'Wraith', ev:['emf','box','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s（テレポートあり）', los:'あり（標準）', hunt:'50%以下', trait:'塩を踏まない。常に浮遊しているため足跡を残さない。特殊能力でランダムな調査員の元へワープした際、EMFレベル2（まれに5）が発生する。'},
   {name:'ファントム', en:'Phantom', ev:['box','uv','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'ランダムにプレイヤーの元へ移動する（移動中はハントしない）。写真や動画を撮ると姿が消え写り込まない。実体化中は心音が聞こえるだけで正気度が徐々に減る。ハント中の点滅で姿が消えている時間が長く、写真を撮ってもノイズが入らない。特殊能力での追跡が終了すると、EMFレベル2が発生する。'},
-  {name:'ポルターガイスト', en:'Poltergeist', ev:['box','uv','wrt'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'物への干渉が多く、投げる際に遠くまで飛ばすことがある。ハント中は0.5秒ごとに100%の確率で物を投げる（通常は50%）。複数の物を同時に動かすこともある。'},
-  {name:'バンシー', en:'Banshee', ev:['orb','uv','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'ターゲット個人の正気度50%以下', trait:'女性限定で出現し、狙った1人の調査員だけを執拗に追う。ハント中もターゲット以外は殺されない（ただしターゲットが調査エリア外にいる場合は例外）。歌う超常現象でターゲットの正気度減少量が5%増加し、いつでも長距離徘徊ができる。指向性マイクを使うと固有のボイスが出ることがあり、ゴーストルームを変更しない。'},
-  {name:'ジン', en:'Jinn', ev:['emf','frz','uv'], speedCats:['standard','fast'], huntBuckets:['mid'], losCats:['accel','none'], speed:'視認時(3m超&ブレーカーON)：2.5m/s固定 ⇔ 通常：1.7m/s', los:'条件次第（視認+3m超+ブレーカーON時は固定速度／それ以外は標準通り加速あり）', hunt:'50%以下', trait:'プレイヤーを視認すると近づくまで高速で固定移動し、3m以内に近づくか見失うと通常速度に戻る。ブレーカーが落ちているとこの能力を使えず、自らブレーカーを下げることもない。視認時の速度は2.5m/s。'},
-  {name:'メアー', en:'Mare', ev:['orb','box','wrt'], speedCats:['standard'], huntBuckets:['low','mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'照明On：40%以下 ⇔ Off：60%以下', trait:'照明を消したがる（自分から点けない）。メイン照明がオンだと正気度40%以下、オフだと60%以下でハントを開始する。照明関係の干渉が多く（ブレーカーは別扱い）、超常現象で照明を破壊する確率も高い。照明がオンの部屋では長距離徘徊ができ、ゴーストルーム変更時の距離上限（通常12m）を無視できる。特殊能力として、点けられた電気を即座に消すことがある（他のゴーストでも偶然同じ現象が起きることがあるため注意）。'},
-  {name:'レヴナント', en:'Revenant', ev:['orb','frz','wrt'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['none'], speed:'未発見：1.0m/s → 発見時：瞬時に3.0m/s', los:'なし（代わりに感知した瞬間だけ固有の急加速）', hunt:'50%以下', trait:'普段は低速移動だが、プレイヤーを感知すると瞬時に3m/sまで加速する。通常の視認加速とは別の仕組み。未発見時の速度は1.0m/s。'},
-  {name:'シェード', en:'Shade', ev:['emf','frz','wrt'], speedCats:['standard'], huntBuckets:['low'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'35%以下', trait:'同じ部屋にプレイヤーがいると干渉・超常現象・自然ハントを一切起こさない。歌う超常現象もしない。魔法陣・オルゴール・猿の手で出現した際、確率で黒い影の姿になることがある。'},
-  {name:'デーモン', en:'Demon', ev:['frz','uv','wrt'], speedCats:['standard'], huntBuckets:['low','mid','high'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'70%以下（開始正気度を無視してハント）', trait:'ハント開始正気度を無視してハントを行う。浄化香の効果は60秒しか持たず（通常90秒）、最速で20秒間隔（通常25秒）のハントを行うこともある。十字架の有効範囲は通常の1.5倍。'},
+  {name:'ポルターガイスト', en:'Poltergeist', ev:['box','uv','wrt'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'物への干渉が多く、投げる際に遠くまで飛ばすことがある。ハント中は0.5秒ごとに100%の確率で物を投げる（通常は50%）。複数の物を同時に動かすこともある。物が置かれていない部屋ではほぼ無力化される。投げる力が通常の2倍（2〜6）あり、投げられた物体からEMFレベル3、物がなくてもゴーストの立ち位置からEMFレベル2が発生する。'},
+  {name:'バンシー', en:'Banshee', ev:['orb','uv','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'ターゲット個人の正気度50%以下', femaleNames:['Ann','April','Barbara','Becky','Betty','Carla','Carol','Catherine','Catiana','Cora','Donna','Doris','Dorothy','Edie','Elizabeth','Ella','Ellen','Emily','Emma','Eva','Georgia','Gloria','Heather','Helen','Holly','Jane','Jazz','Jennifer','Jennise','Jessica','Jo','Josefine','Judy','Julie','Karen','Kate','Kelly','Kim','Leslie','Linda','Lisa','Livy','Lori','Lucy','Marcia','Margaret','Maria','Marie','Mary','Megan','Michelle','Nancy','Nellie','Patricia','Robin','Rose','Ruth','Sandra','Sarah','Shannon','Sharne','Shelly','Sophie','Stacey','Susan','Tricia'], trait:'女性限定で出現し、狙った1人の調査員だけを執拗に追う。ハント中もターゲット以外は殺されない（ただしターゲットが調査エリア外にいる場合は例外）。歌う超常現象でターゲットの正気度減少量が5%増加し、いつでも長距離徘徊ができる。指向性マイクを使うと固有のボイスが出ることがあり、ゴーストルームを変更しない。'},
+  {name:'ジン', en:'Jinn', ev:['emf','frz','uv'], speedCats:['standard','fast'], huntBuckets:['mid'], losCats:['accel','none'], speed:'視認時(3m超&ブレーカーON)：2.5m/s固定 ⇔ 通常：1.7m/s', los:'条件次第（視認+3m超+ブレーカーON時は固定速度／それ以外は標準通り加速あり）', hunt:'50%以下', trait:'プレイヤーを視認すると近づくまで高速で固定移動し、3m以内に近づくか見失うと通常速度に戻る。ブレーカーが落ちているとこの能力を使えず、自らブレーカーを下げることもない。視認時の速度は2.5m/s。特殊能力発動時、ブレーカーでEMFレベル2（まれに5）の反応が出ることがあり、同室または3m以内のプレイヤーの正気度を25%下げることがある。'},
+  {name:'メアー', en:'Mare', ev:['orb','box','wrt'], speedCats:['standard'], huntBuckets:['low','mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'照明On：40%以下 ⇔ Off：60%以下', trait:'照明を消したがる（自分から点けない）。メイン照明がオンだと正気度40%以下、オフだと60%以下でハントを開始する。照明関係の干渉が多く（ブレーカーは別扱い）、超常現象で照明を破壊する確率も高い。照明がオンの部屋では長距離徘徊ができ、ゴーストルーム変更時の距離上限（通常12m）を無視できる。特殊能力として、4m圏内で点けられた電気を10秒のクールタイムを挟みつつ即座に消すことがある（テレビ・PCなど電化製品の電源でも発生。他のゴーストでも偶然同じ現象が起きることがあるため注意）。'},
+  {name:'レヴナント', en:'Revenant', ev:['orb','frz','wrt'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['none'], speed:'未発見：1.0m/s → 発見時：瞬時に3.0m/s', los:'なし（代わりに感知した瞬間だけ固有の急加速）', hunt:'50%以下', trait:'普段は低速移動だが、プレイヤーを感知すると瞬時に3m/sまで加速する。通常の視認加速とは別の仕組み。未発見時の速度は1.0m/s。見失った後も最後に視認した地点に到達するまでは速度を維持し、その後2.7秒かけて徐々に減速する。'},
+  {name:'シェード', en:'Shade', ev:['emf','frz','wrt'], speedCats:['standard'], huntBuckets:['low'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'35%以下', trait:'同じ部屋にプレイヤーがいると干渉・超常現象・自然ハントを一切起こさない。歌う超常現象もしない。魔法陣・オルゴール・猿の手で出現した際、確率で黒い影の姿になることがある。ゴーストミスト（白い靄）は通常より多く起こす。'},
+  {name:'デーモン', en:'Demon', ev:['frz','uv','wrt'], speedCats:['standard'], huntBuckets:['low','mid','high'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'70%以下（開始正気度を無視してハント）', trait:'ハント開始正気度を無視してハントを行う。浄化香の効果は60秒しか持たず（通常90秒）、最速で20秒間隔（通常25秒）のハントを行うこともある。十字架の有効範囲は通常の1.5倍。正気度が低いほど、この正気度無視ハントの発生確率が上がる。'},
   {name:'幽霊', en:'Yurei', ev:['orb','frz','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'近くの正気度を15%減少させ、同時に部屋の扉を1枚完全に閉める（半端に開閉しない）。スマッジを当てると非ハント時に90秒間ゴーストルームへ拘束される。'},
-  {name:'鬼', en:'Oni', ev:['emf','frz','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'ハント中に実体化している時間が長い。超常現象を受けた際の正気度減少量が通常の2倍で、超常現象自体の頻度も高い。霧の姿で漂う超常現象（白い靄）は行わない。'},
-  {name:'妖怪', en:'Yokai', ev:['orb','box','dot'], speedCats:['standard'], huntBuckets:['mid','high'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下（VC/無線使用時は80%以下）', trait:'近くの電子機器や声にしか反応しない（感知範囲2.5m、通常9m）。同室でボイスチャットや無線を使うとハント開始正気度が80%以下まで上がる。'},
+  {name:'鬼', en:'Oni', ev:['emf','frz','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'調査員が近くにいるとより活発になる。ハント中に実体化している時間が長い。超常現象を受けた際の正気度減少量が通常の2倍で、超常現象自体の頻度も高い。霧の姿で漂う超常現象（白い靄）は行わない。'},
+  {name:'妖怪', en:'Yokai', ev:['orb','box','dot'], speedCats:['standard'], huntBuckets:['mid','high'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下（VC/無線使用時は80%以下）', trait:'近くの電子機器や声にしか反応しない（感知範囲2.5m、通常は声・無線9m/電子機器7.5m）。無線は音声なしで鳴らすだけでも反応する。視界については他のゴーストと同じく無制限。同室でボイスチャットや無線を使うとハント開始正気度が80%以下まで上がる。'},
   {name:'ハントゥ', en:'Hantu', ev:['orb','frz','uv'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['none'], speed:'0℃以下：2.7m/s ⇔ 15℃以上：1.4m/s', los:'なし', hunt:'50%以下', trait:'必ず氷点下の証拠を出す。室温が低いほど速く動き（0℃以下で2.7m/s、15℃以上で1.4m/s）、視認加速はしない。ブレーカーを自分から上げることはない。ブレーカーがオフの状態でハントすると白い息を吐く。'},
-  {name:'御霊', en:'Goryo', ev:['emf','uv','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'必ずD.O.T.S.の証拠を出すが、プレイヤーと同室にいる時は出さない。ゴーストルームからほとんど移動せず、ビデオカメラ越しでないとD.O.T.S.に映らない。'},
-  {name:'マイリング', en:'Myling', ev:['emf','uv','wrt'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'ハント中の足音や声が聞こえる範囲が狭い（12m、通常20m）。指向性マイクで聞こえる怪奇音のクールタイムも64秒と短い（通常80秒）。'},
-  {name:'怨霊', en:'Onryo', ev:['orb','box','frz'], speedCats:['standard'], huntBuckets:['low','mid','high'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'60%以下（4m以内に火があると40%以下）', trait:'火を3回吹き消すごとに正気度を無視してハントする。灯った炎は十字架の代わりになり、自分では火をつけない。死亡した調査員が増えるほど火を消す頻度が上がる。この効果の範囲は4mで、十字架より優先される。'},
-  {name:'ツインズ', en:'The Twins', ev:['emf','box','frz'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['accel'], speed:'メイン：約1.5m/s(88%) ⇔ サブ：約1.9m/s(112%)', los:'あり（標準）', hunt:'50%以下', trait:'実際は1体だが2体分の行動を見せる。メインは通常の88%の速度、サブは112%の速度で移動する。本体と分身が同時に干渉を起こすことがある。'},
-  {name:'雷獣', en:'Raiju', ev:['emf','orb','dot'], speedCats:['standard','fast'], huntBuckets:['mid','high'], losCats:['accel','none'], speed:'電子機器付近：2.5m/s固定 ⇔ 通常：1.7m/s', los:'条件次第（電子機器付近では固定速度／それ以外は標準通り加速あり）', hunt:'50%以下（電子機器が近くだと65%以下）', trait:'稼働中の電子機器が近くにあるとハント中に高速固定になる。電子機器を誤作動させる距離・心音が聞こえる距離がどちらも15mと通常より長い。'},
-  {name:'化け狐', en:'Obake', ev:['emf','orb','uv'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'指紋の表示時間が通常の半分。物に触れても指紋を残さないことがある一方、指の本数が増えた特殊な指紋を残すことも。ハント中の点滅時に別のゴーストモデルへ変化する。指紋が残る干渉をしても指紋が残る確率は75%（通常100%）。紫外線の証拠は必ず出す。'},
-  {name:'ミミック', en:'The Mimic', ev:['box','frz','uv'], fakeEv:['orb'], speedCats:['slow','standard','fast'], huntBuckets:['low','mid','high'], losCats:['accel','none'], speed:'模倣元のゴーストに依存', los:'模倣元のゴーストに準じる', hunt:'模倣元のゴーストに依存', trait:'他のゴーストの特徴を模倣する。証拠にはカウントされないが、ゴーストルームに必ずゴーストオーブを出す（証拠0の状態でも見える）。'},
+  {name:'御霊', en:'Goryo', ev:['emf','uv','dot'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'必ずD.O.T.S.の証拠を出すが、プレイヤーと同室にいる時は出さない。ゴーストルームの変更や長距離徘徊がなく移動しない。ビデオカメラ越しでないとD.O.T.S.に映らず、発生率は通常の約2倍に高められている。'},
+  {name:'マイリング', en:'Myling', ev:['emf','uv','wrt'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'平常時はむしろ怪奇音を頻繁に起こす騒がしいゴーストだが、ハント中の足音や声が聞こえる範囲だけ12m（通常20m）と狭くなる、という相反する特性を持つ。超常現象時は心音・足音・声とも通常通りの範囲になる。指向性マイクで聞こえる怪奇音のクールタイムも64秒と短い（通常80秒）。'},
+  {name:'怨霊', en:'Onryo', ev:['orb','box','frz'], speedCats:['standard'], huntBuckets:['low','mid','high'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'60%以下（4m以内に火があると40%以下）', trait:'火を3回吹き消すごとに正気度を無視してハントする。灯った炎は十字架の代わりになり、自分では火をつけない。死亡した調査員が増えるほど火を消す頻度が上がる。この効果の範囲は4mで、十字架より優先される。火を消す際にはEMFレベル2が発生する。火でハントを防いだ場合、通常の25秒クールタイムは発生しない。'},
+  {name:'ツインズ', en:'The Twins', ev:['emf','box','frz'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['accel'], speed:'メイン：約1.5m/s(88%) ⇔ サブ：約1.9m/s(112%)', los:'あり（標準）', hunt:'50%以下', trait:'実際は1体だが2体分の行動を見せる（分身は実体を持たない）。メインは通常の88%の速度、サブは112%の速度で移動する。本体のみがスピリットボックス・氷点下の証拠を出すが、EMFはどちらの干渉でも発生する。本体と分身が同時に干渉を起こすことがあり、分身の干渉範囲は本体よりはるかに広い（小中マップ約8.5m、大マップ約17m）。ハントは本体（現在地）か分身（前回の長距離干渉位置）のどちらからでも開始できる。'},
+  {name:'雷獣', en:'Raiju', ev:['emf','orb','dot'], speedCats:['standard','fast'], huntBuckets:['mid','high'], losCats:['accel','none'], speed:'電子機器付近：2.5m/s固定 ⇔ 通常：1.7m/s', los:'条件次第（電子機器付近では固定速度／それ以外は標準通り加速あり）', hunt:'50%以下（電子機器が近くだと65%以下）', trait:'稼働中の電子機器が近くにあるとハント開始正気度が65%以下に上がり、ハント中は2.5m/s固定になる（電子機器の感知距離自体は通常と同じ7.5m/9m）。電子機器を誤作動させる距離・心音が聞こえる距離がどちらも15mと通常より長く、心音は距離による減衰も少ないため遠くでも大きく聞こえる。'},
+  {name:'化け狐', en:'Obake', ev:['emf','orb','uv'], speedCats:['standard'], huntBuckets:['mid'], losCats:['accel'], speed:'標準 1.7m/s', los:'あり（標準）', hunt:'50%以下', trait:'指紋の表示時間が通常の半分。25%の確率で指紋を残さない一方、1/6の確率で指の本数が1本増えた特殊な指紋を残す。ハント中は決まった点滅回数（12・27・39・54・62・80・105・120・132回目）で必ず1回は別のゴーストモデルへ変化し、同性別モデルの中を決まった順で巡る（ビデオカメラでも「ゴーストシェイプシフト」として検知可能）。紫外線の証拠は必ず出す。'},
+  {name:'ミミック', en:'The Mimic', ev:['box','frz','uv'], fakeEv:['orb'], speedCats:['slow','standard','fast'], huntBuckets:['low','mid','high'], losCats:['accel','none'], speed:'模倣元のゴーストに依存', los:'模倣元のゴーストに準じる', hunt:'模倣元のゴーストに依存', trait:'他のゴーストの特徴を模倣する。証拠にはカウントされないが、ゴーストルームに必ずゴーストオーブを出す（証拠0の状態でも見える）。玄関の扉が開錠されてから1分経過するまでは模倣能力が発動せず、標準的な状態のまま。一度ハントが始まると、そのハント中に模倣先が変わることはない。'},
   {name:'モーロイ', en:'Moroi', ev:['box','frz','wrt'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['accel'], speed:'正気度45%以上：1.5m/s → 0〜5%：2.25m/s（視認継続で最大3.71m/s）', los:'あり（独自方式、継続視認で段階的に上昇し最大3.71m/s）', hunt:'50%以下', trait:'声を聞いたプレイヤーに正気度が倍速で減る呪いをかける（照明でも止められない、減少速度は約1秒ごとに1%）。正気度が下がるほど移動速度が上がり、浄化香を当てると7秒間見失う（通常5秒）。スピリットボックスの証拠は必ず出す。'},
   {name:'デオヘン', en:'Deogen', ev:['box','wrt','dot'], speedCats:['slow','fast'], huntBuckets:['low'], losCats:['none'], speed:'2.5m以内：0.4m/s ⇔ 6m超：3.0m/s（距離で連続変化）', los:'なし（時間ではなく距離で速度が変わる）', hunt:'40%以下', trait:'ハント中は常にプレイヤーの位置を把握しているため隠れても見つかる。プレイヤーから遠いと非常に速いが、2.5m以内まで近づくと極端に遅くなる。1m以内にいると、スピリットボックスの返答が確率で専用のものになる。スピリットボックスの証拠は必ず出す。'},
-  {name:'セーイ', en:'Thaye', ev:['orb','wrt','dot'], speedCats:['slow','fast'], huntBuckets:['low','high'], losCats:['none'], speed:'若い時：2.75m/s → 老化後：1.0m/s', los:'なし', hunt:'74%以下 ～ 老化後14%以下', trait:'契約序盤（正気度74%以下）は2.75m/sと速いが、時間経過で老化すると正気度14%以下まで下がり、移動速度も1m/sまで落ちる。視認加速はしない。老化するごとにウィジャ盤で聞こえる年齢が1〜4歳ずつ増加する。'},
-  {name:'ガルル', en:'Gallu', ev:['emf','box','uv'], speedCats:['slow','standard','fast'], huntBuckets:['low','mid','high'], losCats:['accel'], speed:'激昂：1.955m/s ⇔ 疲弊：1.360m/s', los:'あり（標準、表記の値は各状態の基準速度）', hunt:'通常50%以下（激昂60%以下／疲弊40%以下）', trait:'防護装備（浄化香・十字架・塩）を使われると激昂し、激昂中にハントを終えると疲弊する。激昂中は移動が速く塩を踏まなくなり、疲弊中は動きが遅くなる。'},
+  {name:'セーイ', en:'Thaye', ev:['orb','wrt','dot'], speedCats:['slow','fast'], huntBuckets:['low','high'], losCats:['none'], speed:'若い時：2.75m/s → 老化後：1.0m/s', los:'なし', hunt:'74%以下 ～ 老化後14%以下', trait:'契約序盤（正気度74%以下）は2.75m/sと速いが、時間経過で老化すると正気度14%以下まで下がり、移動速度も1m/sまで落ちる。視認加速はしない。老化するごとにウィジャ盤で聞こえる年齢が1〜4歳ずつ増加する。老化は前回の老化から1〜2分後のタイミングで、同室または3m以内に調査員がいれば1段階進む（条件を満たさなければ30秒後に再判定）。老化前の初期状態は干渉・超常現象の発生率が通常の2倍と高い。'},
+  {name:'ガルル', en:'Gallu', ev:['emf','box','uv'], speedCats:['slow','standard','fast'], huntBuckets:['low','mid','high'], losCats:['accel'], speed:'激昂：1.955m/s ⇔ 疲弊：1.360m/s', los:'あり（標準、表記の値は各状態の基準速度）', hunt:'通常50%以下（激昂60%以下／疲弊40%以下）', trait:'防護装備（浄化香・十字架・塩）を使われると激昂し、激昂中にハントを終えると疲弊する。激昂中は防護装備の効果が下がり、疲弊中は効果が上がる。激昂中は移動が速く塩を踏まなくなり、疲弊中は動きが遅くなる。'},
   {name:'オバンボ', en:'Obambo', ev:['uv','wrt','dot'], speedCats:['slow','fast'], huntBuckets:['low','high'], losCats:['accel'], speed:'穏やか：1.445m/s ⇔ 攻撃的：1.955m/s（視認継続で最大約3.23m/s）', los:'あり（攻撃的状態は視認持続で最大約3.23m/sまで上昇）', hunt:'穏やか：10%以下 ⇔ 攻撃的：65%以下', trait:'外扉解錠1分後を最初に、以降2分ごとに「穏やか」と「攻撃的」を切り替える。攻撃的な時は移動が速くハントも短時間で終わるが、穏やかな時は干渉・超常現象が多い。'},
   {name:'アスワング', en:'Aswang', ev:['frz','wrt','dot'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['accel'], speed:'標準の90%（約1.53m/s）、加速上限2.53m/sに約8.7秒で到達', los:'あり（通常より加速が速く、上限2.53m/sに約8.7秒で到達）', hunt:'50%以下', trait:'通常ゴーストの90%の速度で移動するが、最大視認加速には約2/3の時間で到達する。公式の隠れ場所にいる調査員はキルせずハントを中断し、次のハントでその調査員の位置へ向かう。'},
   {name:'コルモス', en:'Kormos', ev:['orb','box','uv'], speedCats:['standard','fast'], huntBuckets:['mid','high'], losCats:['accel','none'], speed:'感知追跡時：約2.21m/s（標準の130%）', los:'条件次第（追跡発動中は視認ではなく足音等で固定速度）', hunt:'通常50%以下（同室で走行を感知すると70%以下）', trait:'5m以内で足音を立てない限り視認できない。足音や声・電子機器を感知すると130%の速度で追跡し、視認せずとも距離だけでキルが成立する。'},
-  {name:'ダヤン', en:'Dayan', ev:['emf','orb','box'], speedCats:['slow','fast'], huntBuckets:['mid','high'], losCats:['accel','none'], speed:'近くの人が静止：1.2m/s固定 ⇔ 動いている：2.25m/s固定', los:'条件次第（10m以内に人がいる間は固定速度、範囲外に出ると蓄積分が適用）', hunt:'10m以内：静止時45%以下／移動時65%以下、無人時50%以下', trait:'必ず女性の姿で出現する。10m以内の人が動いていると高速でハントし、立ち止まっていると低速になる。'},
+  {name:'ダヤン', en:'Dayan', ev:['emf','orb','box'], speedCats:['slow','fast'], huntBuckets:['mid','high'], losCats:['accel','none'], speed:'近くの人が静止：1.2m/s固定 ⇔ 動いている：2.25m/s固定', los:'条件次第（10m以内に人がいる間は固定速度、範囲外に出ると蓄積分が適用）', hunt:'10m以内：静止時45%以下／移動時65%以下、無人時50%以下', femaleNames:['Ann','April','Barbara','Becky','Betty','Carla','Carol','Catherine','Catiana','Cora','Donna','Doris','Dorothy','Edie','Elizabeth','Ella','Ellen','Emily','Emma','Eva','Georgia','Gloria','Heather','Helen','Holly','Jane','Jazz','Jennifer','Jennise','Jessica','Jo','Josefine','Judy','Julie','Karen','Kate','Kelly','Kim','Leslie','Linda','Lisa','Livy','Lori','Lucy','Marcia','Margaret','Maria','Marie','Mary','Megan','Michelle','Nancy','Nellie','Patricia','Robin','Rose','Ruth','Sandra','Sarah','Shannon','Sharne','Shelly','Sophie','Stacey','Susan','Tricia'], trait:'必ず女性の姿で出現する（ファーストネームと見た目が男性ならダヤンは除外できる）。10m以内で一番近い調査員の動き（方向キー入力で判定、視点移動のみでは不成立）によって速度が変わり、動いていると高速固定、立ち止まっていると低速固定になる。固定速度中も視認加速は内部で蓄積され続け、10m圏内に誰もいなくなると反映される。'},
   {name:'ディルデガスト', en:'Deildegast', ev:['emf','wrt','dot'], speedCats:['slow','fast'], huntBuckets:['mid'], losCats:['none'], speed:'3.0m/s ~ 0.4m/s（動かされた配置物数に依存）', los:'なし（配置物を動かした数に依存）', hunt:'平均50%以下', trait:'ハント時の基本移動速度は3m/sと非常に速く、視認加速はない。ハント前に調査員が動かした配置物（拾う・操作した物）の数に応じて減速し、1個につき約0.1m/s低下、26個前後で最低速度0.4m/sまで落ちる。速度はハント終了時か十字架使用後にリセットされる。'},
 ];
 
@@ -402,6 +430,7 @@ const speedState = {};   // keys: 'slow' | 'standard' | 'fast'
 const huntState = {};    // keys: 'low' | 'mid' | 'high'
 const losState = {};     // keys: 'accel' | 'none'
 const openCards = new Set();
+const openNameBoxes = new Set();
 const manuallyExcluded = new Set(); // stores ghost.en
 let excludedListOpen = false;
 let extraFilterOpen = false;
@@ -655,8 +684,25 @@ function render(){
             ${g.hunt ? `<span class="stat-label hunt">ハントライン</span><span class="stat-value hunt">${g.hunt}</span>` : ''}
           </div>
           <div class="ghost-trait-text">${g.trait}</div>
+          ${g.femaleNames ? `
+          <div class="name-box">
+            <button type="button" class="name-box-title" data-name-toggle="${g.en}">
+              <span>女性ゴーストの名前一覧<span class="name-box-count">${g.femaleNames.length}件</span></span>
+              <span class="name-box-chev ${openNameBoxes.has(g.en) ? 'open' : ''}">▶</span>
+            </button>
+            <div class="name-chip-grid ${openNameBoxes.has(g.en) ? 'open' : ''}">${g.femaleNames.map(n => `<span class="name-chip">${n}</span>`).join('')}</div>
+          </div>` : ''}
         </div>
       `;
+
+      if(g.femaleNames){
+        const nameToggleBtn = detail.querySelector('[data-name-toggle]');
+        nameToggleBtn.addEventListener('click', function(e){
+          e.preventDefault();
+          if(openNameBoxes.has(g.en)){ openNameBoxes.delete(g.en); } else { openNameBoxes.add(g.en); }
+          render();
+        });
+      }
 
       card.appendChild(top);
       card.appendChild(chipsDiv);
